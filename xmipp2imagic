@@ -45,7 +45,7 @@ done
 echo "! "
 echo "! IMAGIC program: headers -----------Euler angle alpha (3D and angular reconst.)------"
 echo "! "
-/home/imagic/imagic/stand/headers.e <<EOF
+/home/imagic/imagic_130529_64/stand/headers.e <<EOF
 WRITE
 INDEX
 NUM
