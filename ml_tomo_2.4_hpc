@@ -1,0 +1,49 @@
+#!/bin/bash
+#SBATCH -n 256
+#SBATCH -N 16
+#SBATCH --tasks-per-node 16
+#SBATCH -p grant
+#SBATCH -A g2014a90
+#SBATCH -t 96:00:00
+#################################
+source ~/xmipp2.rc
+# Get time as a UNIX timestamp (seconds elapsed since Jan 1, 1970 0:00 UTC)
+T="$(date +%s)"
+
+###START OF USEFUL PART###
+# Iput volumes should be normalized to zero avg and 1 std in xmipp (xmipp_normalize -i volumes.sel -vol)
+# Before start, correct the following parameters:
+#-dim 60 Use downscaled (in fourier space) images of this size - doesn't do downscaling, just cut the box from images!!
+#-reg0 Regularization factor = 5N/K^2 where N number of 3D models, K number of references (classes)
+#-maxres 0.27 Maximum resolution = 1/0.27=3.7px=3.7px*5.4A/px(pixel_size)=20A
+#-nref number of references
+
+####This is a first exhaustive search of alignment parameters for all volumes
+#mkdir run0
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images.sel -nref 1 -o run0/nref1_15deg -doc images.doc -missing wedges.doc -iter 15 -ang 15 -perturb -dim 64
+
+#mkdir run1
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images.sel -nref 1 -o run1/nref1_10deg -doc run0/nref1_15deg_it000015.doc -keep_angles -missing wedges.doc -iter 15 -ang 10 -ang_search 50 -perturb -dim 64
+
+#mkdir run2
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images.sel -nref 1 -o run2/nref1_5deg -doc run1/nref1_10deg_it000015.doc -keep_angles -missing wedges.doc -iter 15 -ang 5 -ang_search 20 -perturb -dim 64 
+
+####This is a last step of alignment, the only purpose is to do final centering with CC approach (much faster)
+#mkdir run3
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images.sel -nref 1 -o run3/nref1_5deg -doc run2/nref1_5deg_it000015.doc -keep_angles -missing wedges.doc -iter 15 -ang 5 -ang_search 10 -dim 64 -maxCC
+
+####This is an exhaustive classification run with well aligned coarsed 2x volumes [xmipp_scale -i vols.sel -factor 0.5; xmipp_normalize -i vols.sel -vol]
+#####To prevent getting stuck in local minima in the early stages of the classification, a regularization is applied in the first run that imposes similarity on the three references during the first five iterations.
+#mkdir runclass10_coarsed
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images_coarsed.sel -nref 10 -o runclass10_coarsed/nref1_10deg -doc run3/nref1_5deg_it000015_coarsed50px.doc -keep_angles -missing wedges.doc -iter 15 -ang 10 -ang_search 25 -maxres 0.27 -dim 40 -reg0 5 -regF 0 -reg_steps 5
+
+####This is a final classification run with fine sampling
+#mkdir run2class10_coarsed
+#mpirun xmipp_mpi_ml_tomo -sym c1 -i images_coarsed.sel -nref 10 -o run2class10_coarsed/nref1_5deg -doc runclass10_coarsed/nref1_10deg_it000013.doc -keep_angles -missing wedges.doc -iter 5 -ang 5 -ang_search 10 -maxres 0.27 -dim 40 -reg0 7.5 -regF 0 -reg_steps 5
+
+###END OF USEFUL PART###
+echo -e "\n"
+T="$(($(date +%s)-T))"
+echo -e "Time in seconds: ${T}\n"
+
+printf "Pretty format: %02d%-3s%02d%-3s%02d%-3s%02d%-3s\n" "$((T/86400))" "d" "$((T/3600%24))" "h" "$((T/60%60))" "m" "$((T%60))" "s"
