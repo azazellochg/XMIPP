@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "Script assumes you have your *.vol 3D RCT volumes in current folder!"
+k=1
+echo "Enter maximum tilt angle: "
+read tilt
+echo " ; Wedgeinfo" > wedges.doc
+for i in `ls *.vol`
+do
+        echo "${i} 1" >> images.sel
+        echo -e " ; ${i}\n${k} 10  0 0 0 0 0 0 0 1 0 0" >> images.doc
+        echo -e " ; cone\n${k} 1 ${tilt}." >> wedges.doc
+        ((k++))
+done
