@@ -1,4 +1,4 @@
-labo_scripts
+XMIPP
 ============
 
-Simple bash scripts for the lab
+Bash scripts for XMIPP 2.4 and 3.1
