@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd Images/Extracted/run_001
+echo "`tail -n1 images.xmd | awk {'print $3'}` particles total found."
+awk {'if($5=="-1")print $6'} images_untilted.xmd > del.plt
+awk {'if($5=="-1")print $6'} images_tilted.xmd >> del.plt
+awk {'if($4=="-1")print $3'} images.xmd >> del.plt
+cat del.plt | sort -n | uniq > del2.plt
+echo "`wc -l del2.plt | awk {'print $1'}` particles to disable..."
+awk 'NR==FNR{a[$0];next}{if (NF<3)print;else if($6 in a){printf "%s%s%11d%11d%11d%11d\n",$1" ",$2,$3,$4,"-1",$6}else print}' del2.plt images_untilted.xmd > untilted_good.xmd
+awk 'NR==FNR{a[$0];next}{if (NF<3)print;else if($6 in a){printf "%s%s%11d%11d%11d%11d\n",$1" ",$2,$3,$4,"-1",$6}else print}' del2.plt images_tilted.xmd > tilted_good.xmd
+echo -n "Done!"
+echo ""
+cd $OLDPWD
+rm -f del.plt del2.plt
