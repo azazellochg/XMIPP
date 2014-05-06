@@ -1,0 +1,106 @@
+#!/bin/bash
+export IMAGIC_BATCH=1
+# Batch assumes that you used prep_conic3.b to prepare your files for Imagic alignment
+echo "Batch to convert Xmipp3 parameters to Imagic"
+echo -en "Last alined untilted imagic file (without extension)  : "
+read Ali
+echo ""
+echo -en "Centered tilted imagic file (without extension)  : "
+read Tilt
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+PLT
+INDEX
+NUM
+116
+NO
+$Ali
+gamma_plus.plt
+EOF
+#Reverse gamma angles:
+cat gamma_plus.plt | awk '{print -$1}' > gamma.plt
+rm -f gamma_plus.plt
+if du | grep "Images/Extracted" > /dev/null
+then :
+else
+echo "You didn't run Particle extraction!"
+exit 1
+fi
+echo -en "Hit enter to select the micrographs.xmd file"
+read Junk1
+Xmd=`zenity --file-selection --title="micrographs.xmd file" --file-filter=*.xmd`
+if [ -f alpha.plt ]
+then
+rm -f alpha.plt
+fi
+if [ -f beta.plt ]
+then
+rm -f beta.plt
+fi
+# old xmipp2.4: imagic_alpha=alpha_t+90
+# new xmipp3.1: imagic_alpha=angleY2+90
+/home/platform/relion1.2/bin/relion_star_printtable $Xmd data_micrographPairs _micrograph _angleY2 _angleTilt | awk '{print $1,$2+90,$3}' > angles.plt
+cut -d" " -f1 angles.plt | sed 's/[^0-9]*//g' > del.plt
+cut -d" " -f2,3 angles.plt > del2.plt
+paste -d ' ' del.plt del2.plt > angles.plt
+rm -f del.plt del2.plt
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+PLT
+INDEX
+NUM
+52
+NO
+$Ali
+mic_num.plt
+EOF
+cat mic_num.plt | cut -d'.' -f1 | sed 's/[^0-9]*//g' > mic_num2.plt
+for key in `cat mic_num2.plt`;
+do
+awk -v key=$key '($1==key)' angles.plt >> del3.plt;
+done
+cut -d" " -f2 del3.plt > alpha.plt
+cut -d" " -f3 del3.plt > beta.plt
+rm -f del3.plt mic_num.plt mic_num2.plt
+echo "! "
+echo "! IMAGIC program: headers ----------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+WRITE
+INDEX
+NUM
+65
+FILE
+alpha.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers ----------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+WRITE
+INDEX
+NUM
+66
+FILE
+beta.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers ----------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+WRITE
+INDEX
+NUM
+67
+FILE
+gamma.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers ----------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
+TAKE_OVER
+AR_EULER_TO_PM_EULER
+$Tilt
+EOF
