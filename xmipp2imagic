@@ -1,0 +1,88 @@
+#!/bin/bash
+export IMAGIC_BATCH=1
+# Batch assumes that you used prep_conic.b to prepare your files for Imagic alignment
+echo "Batch to convert Xmipp parameters to Imagic"
+echo -en "Last alined untilted imagic file (without extension)  : "
+read Ali
+echo ""
+echo -en "Centered tilted imagic file (without extension)  : "
+read Tilt
+/home/imagic/imagic_130529_64/stand/headers.e <<EOF >/dev/null
+PLT
+INDEX
+NUM
+116
+NO
+$Ali
+gamma_plus.plt
+EOF
+#Reverse gamma angles:
+cat gamma_plus.plt | awk '{print -$1}' > gamma.plt
+#
+if du | grep Preprocessing | grep -v "Preprocessing/" > /dev/null
+then
+echo ""
+else
+echo "You don't have an Xmipp folder called \"Preprocessing\" in this directory"
+exit 1
+fi
+AngDir=`du | grep Preprocessing | grep -v "Preprocessing/" | awk '{print $2}' | sed "s@./@@"`
+ 
+if [ -f alpha.plt ]
+then
+rm alpha.plt
+fi
+if [ -f beta.plt ]
+then
+rm beta.plt
+fi
+ 
+for i in `cat untilt_sel.plt | sed -e "s/Images/$AngDir/g" -e "s/_[0-9]*.xmp$/.ang/g"`
+do
+cat $i | sed '1d' | awk '{print $2+90}' >> alpha.plt
+cat $i | sed '1d' | awk '{print $3}' >> beta.plt
+done
+echo "! "
+echo "! IMAGIC program: headers -----------Euler angle alpha (3D and angular reconst.)------"
+echo "! "
+/home/imagic/imagic/stand/headers.e <<EOF
+WRITE
+INDEX
+NUM
+65
+FILE
+alpha.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers ---------Euler angle beta (3D and angular reconst.)-------"
+echo "! "
+/home/imagic/imagic_130529_64/stand/headers.e <<EOF
+WRITE
+INDEX
+NUM
+66
+PLT_FILE
+beta.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers -------Euler angle gamma (3D and angular reconst.)---"
+echo "! "
+/home/imagic/imagic_130529_64/headers.e <<EOF
+WRITE
+INDEX
+NUM
+67
+PLT_FILE
+gamma.plt
+$Tilt
+EOF
+echo "! "
+echo "! IMAGIC program: headers ----------------------------------------------"
+echo "! "
+/home/imagic/imagic_130529_64/stand/headers.e <<EOF
+TAKE_OVER
+AR_EULER_TO_PM_EULER
+$Tilt
+EOF
