@@ -1,0 +1,57 @@
+#!/bin/bash
+export IMAGIC_BATCH=1
+ 
+echo "Script to convert Xmipp image files to imagic stack"
+echo ""
+echo ""
+echo -en "Hit enter to select the untilted selfile"
+read Junk1
+UntSel=`zenity --file-selection --title="Untilted selfile" --file-filter=*.sel`
+cat $UntSel | awk '{print $1}' > untilt_sel.plt
+echo ""
+echo -en "Hit a key to select the tilted selfile"
+read Junk2
+TiltSel=`zenity --file-selection --title="Untilted selfile" --file-filter=*.sel`
+cat $TiltSel | awk '{print $1}' > tilt_sel.plt
+echo ""
+echo -en "Pixel spacing (in Angstroms)  : "
+read PixSpa
+ 
+echo "! "
+echo "! IMAGIC program: em2em ------------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/em2em.e <<EOF
+SPIDER
+SIN
+IMAGIC
+2D
+FILE
+untilt_sel.plt
+untilt_stack
+$PixSpa
+0
+EOF
+echo "! "
+echo "! IMAGIC program: em2em ------------------------------------------------"
+echo "! "
+/home/imagic/imagic_110308_64/stand/em2em.e <<EOF
+SPIDER
+SIN
+IMAGIC
+2D
+FILE
+tilt_sel.plt
+tilt_stack
+$PixSpa
+0
+EOF
+echo ""
+echo "------------------------------"
+echo ""
+echo "Now you have an untilted stack file : untilt_stack"
+echo "and a tilted stack : tilt_stack."
+echo ""
+echo "When you are ready with the alignment of the untilted stack"
+echo "and centering of the tilted, you should run conic_xmipp2im.b"
+echo "to write the xmipp tilt angles to the header of the centered "
+echo "tilted stack."
