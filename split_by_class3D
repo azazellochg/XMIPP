@@ -42,7 +42,7 @@ for i in ${array[@]}; do
 	echo -n "Creating files for class $i containing ${num} volumes.."
 	echo " ; Wedgeinfo" > wedges_class${i}.doc
 	echo " ; Headerinfo columns: rot (1), tilt (2), psi (3), Xoff (4), Yoff (5), Zoff (6), Ref (7), Wedge (8), Pmax/sumP (9), LL (10)" > class${i}.doc
-	awk '{print $1," 1"}' class${i}.tmp >> images_class${i}.sel
+	awk '{print $1,"1"}' class${i}.tmp >> images_class${i}.sel
 	awk '{printf "%s%s\n%5s%3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%14s\n"," ; ",$1,NR,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' class${i}.tmp >> class${i}.doc
 for k in `seq 1 ${num}`; do
 	echo -e " ; cone\n${k} 1 ${tilt}." >> wedges_class${i}.doc
