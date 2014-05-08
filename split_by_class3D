@@ -1,0 +1,52 @@
+#!/bin/bash
+echo -e "Input doc file of last mltomo classification iteration (e.g. nref1_10deg_it000015.doc):"
+DocFile=`zenity --title="Doc file of last iteration" --file-selection --file-filter="*.doc"`
+if [[ "`awk 'NR==1{print $0}' ${DocFile}`" == " ; Headerinfo columns: rot (1), tilt (2), psi (3), Xoff (4), Yoff (5), Zoff (6), Ref (7), Wedge (8), Pmax/sumP (9), LL (10)" ]]; then
+:
+else echo "Wrong doc file!" && exit 1
+fi
+max_class=`tail -n+2 ${DocFile} | awk '{print $9}' | sed '/^$/d;s/.00000//g' | awk 'BEGIN {max = 0} {if ($0>max) max=$0} END {print max}'`
+#Check if doc file is correct
+if [[ -z "${max_class}" ]];then
+echo "Wrong doc file!" && exit 1
+else :
+fi
+echo -n "Input class numbers to select (e.g. 1;5;4;2): "
+read value
+echo -n "Enter maximum tilt angle (e.g. 45): "
+read tilt
+#Check if class numbers are numbers, separated by semicolon
+reg='^[0-9]+$'
+if ! [[ `echo "$value" | sed 's/;//g'` =~ $reg ]] ; then
+   echo "error: Not a number"; exit 1
+fi
+#Check if max class number is not exceeded
+declare -a array
+array=(${value//;/ })
+max=0
+for n in "${array[@]}" ; do
+    ((n > max)) && max=$n
+done
+if [ "${max}" -le "${max_class}" ]; then
+:
+else echo "There are only ${max_class} classes in doc file!"; exit 1
+fi
+tail -n+2 ${DocFile} | awk 'NR%2==1{print $2}' > temp
+tail -n+2 ${DocFile} | awk 'NR%2==0{printf "%3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%14s\n",$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' > temp2
+paste temp temp2 > temp3
+echo "The script will now create doc file, wedges.doc and sel file for each selected class.."
+for i in ${array[@]}; do
+	[ -f images_class${i}.sel ] && rm -f images_class${i}.sel
+	awk -v i=$i '$9==i{print $0}' temp3 > class${i}.tmp
+	num=`wc -l class${i}.tmp | awk '{print $1}'`
+	echo -n "Creating files for class $i containing ${num} volumes.."
+	echo " ; Wedgeinfo" > wedges_class${i}.doc
+	echo " ; Headerinfo columns: rot (1), tilt (2), psi (3), Xoff (4), Yoff (5), Zoff (6), Ref (7), Wedge (8), Pmax/sumP (9), LL (10)" > class${i}.doc
+	awk '{print $1," 1"}' class${i}.tmp >> images_class${i}.sel
+	awk '{printf "%s%s\n%5s%3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%14s\n"," ; ",$1,NR,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' class${i}.tmp >> class${i}.doc
+for k in `seq 1 ${num}`; do
+	echo -e " ; cone\n${k} 1 ${tilt}." >> wedges_class${i}.doc
+done
+echo "OK"
+done
+rm -f temp* class*.tmp
