@@ -12,6 +12,10 @@ The following automated csh script will first apply the translation and then the
 This would create a copy of each aligned sub-tomogram with an additional extension .app.
 
 ---
+#####check_disables_rct_images
+
+Script for XMIPP3.1 will check and remove disabled (-1) images from xmd metadata files after RCT picking.
+
 #####prep_conic_2.4
 
 The bellow scripts assumes that you start the conical tilt experiment with Xmipp and with the default options (you store micrographs in the “Preprocessing” directory and extracted images in the “Images” directory). When you finished picking in Xmipp, extract and process both the tilted and untilted images with “Preprocess Particles” still in Xmipp. Then run the ”prep_conic.b” script. This will create in the Xmipp home folder an untilted (untilt_stack.img) and a tilted stack (tilt_stack.img).
@@ -20,6 +24,11 @@ The bellow scripts assumes that you start the conical tilt experiment with Xmipp
 #####prep_conic_3.1
 
 The bellow scripts assumes that you start the conical tilt experiment with Xmipp3 and with the default options (you store extracted images in the “Images/Extracted/run_***” directory). When you finished picking in Xmipp, extract and process both the tilted and untilted images with “Extract Particles” still in Xmipp. Then run the ”prep_conic3.b” script. This will create in the Xmipp home folder an untilted (untilt_stack.img) and a tilted stack (tilt_stack.img).
+
+---
+#####split_by_class3D
+
+This script for XMIPP2.4 will split 3D volumes by classes based on last mltomo classification iteration. User can select which classes he wants to extract.
 
 ---
 #####xmipp2imagic
