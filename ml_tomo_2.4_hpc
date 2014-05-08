@@ -37,9 +37,11 @@ T="$(date +%s)"
 #mkdir runclass10_coarsed
 #mpirun xmipp_mpi_ml_tomo -sym c1 -i images_coarsed.sel -nref 10 -o runclass10_coarsed/nref1_10deg -doc run3/nref1_5deg_it000015_coarsed50px.doc -keep_angles -missing wedges.doc -iter 15 -ang 10 -ang_search 25 -maxres 0.27 -dim 40 -reg0 5 -regF 0 -reg_steps 5
 
-####This is a final classification run with fine sampling
-#mkdir run2class10_coarsed
-#mpirun xmipp_mpi_ml_tomo -sym c1 -i images_coarsed.sel -nref 10 -o run2class10_coarsed/nref1_5deg -doc runclass10_coarsed/nref1_10deg_it000013.doc -keep_angles -missing wedges.doc -iter 5 -ang 5 -ang_search 10 -maxres 0.27 -dim 40 -reg0 7.5 -regF 0 -reg_steps 5
+#here can be one more run to classify a separate class, in order to check it's homogeneity
+
+mkdir -p finalrun/class2
+#Final run for each good class from previous run
+mpirun xmipp_mpi_ml_tomo -sym c1 -i images_class2.sel -nref 1 -o finalrun/class2/nref1_5deg -doc class2.doc -keep_angles -missing wedges_class2.doc -iter 15 -ang 2 -ang_search 10 -maxCC
 
 ###END OF USEFUL PART###
 echo -e "\n"
