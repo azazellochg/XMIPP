@@ -39,7 +39,7 @@ fi
 # old xmipp2.4: imagic_alpha=alpha_t+90
 # new xmipp3.1: imagic_alpha=angleY2+90
 /home/platform/relion1.2/bin/relion_star_printtable $Xmd data_micrographPairs _micrograph _angleY2 _angleTilt | awk '{print $1,$2+90,$3}' > angles.plt
-cut -d" " -f1 angles.plt | sed 's/[^0-9]*//g' > del.plt
+cut -d" " -f1 angles.plt | sed 's/[^0-9]*//g;s/^0*//' > del.plt
 cut -d" " -f2,3 angles.plt > del2.plt
 paste -d ' ' del.plt del2.plt > angles.plt
 rm -f del.plt del2.plt
