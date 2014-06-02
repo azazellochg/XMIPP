@@ -13,7 +13,7 @@ WRITE
 2D_IMAGE
 untilt_stack
 EOF
-cat $UntSel | awk '{if(NF>3 && $5!="-1")print $2}' | sed 's/[^0-9]*//g' > mic_num.plt # list of "enabled" mic numbers
+cat $UntSel | awk '{if(NF>3 && $5!="-1")print $2}' | sed 's/[^0-9]*//g;s/^0*//' > mic_num.plt # list of "enabled" mic numbers
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 INDEX/LABEL
@@ -27,7 +27,7 @@ echo ""
 echo -en "Hit a key to select the tilted xmd file"
 read Junk2
 TiltSel=`zenity --file-selection --title="Tilted xmd file" --file-filter=*.xmd`
-~sharov/soft/xmipp-3.1-src/bin/xmipp_image_convert -i $TiltSel --mode overwrite --label image -o tilt_stack.img --oext img --type auto --depth default
+xmipp_image_convert -i $TiltSel --mode overwrite --label image -o tilt_stack.img --oext img --type auto --depth default
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 2D_IMAGE
