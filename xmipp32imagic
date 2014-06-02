@@ -2,11 +2,10 @@
 export IMAGIC_BATCH=1
 # Batch assumes that you used prep_conic3.b to prepare your files for Imagic alignment
 echo "Batch to convert Xmipp3 parameters to Imagic"
-echo -en "Last alined untilted imagic file (without extension)  : "
-read Ali
-echo ""
-echo -en "Centered tilted imagic file (without extension)  : "
-read Tilt
+echo "Last alined untilted imagic file: "
+Ali=`zenity --file-selection --title="Last alined untilted imagic file" --file-filter=*.img`
+echo "Centered tilted imagic file: "
+Tilt=`zenity --file-selection --title="Centered tilted imagic file" --file-filter=*.img`
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 PLT
 INDEX
@@ -22,22 +21,14 @@ rm -f gamma_plus.plt
 if du | grep "Images/Extracted" > /dev/null
 then :
 else
-echo "You didn't run Particle extraction!"
-exit 1
+echo "You didn't run Particle extraction!" && exit 1
 fi
 echo -en "Hit enter to select the micrographs.xmd file"
 read Junk1
 Xmd=`zenity --file-selection --title="micrographs.xmd file" --file-filter=*.xmd`
-if [ -f alpha.plt ]
-then
-rm -f alpha.plt
-fi
-if [ -f beta.plt ]
-then
-rm -f beta.plt
-fi
-# old xmipp2.4: imagic_alpha=alpha_t+90
-# new xmipp3.1: imagic_alpha=angleY2+90
+[ -f alpha.plt ] && rm -f alpha.plt
+[ -f beta.plt ] && rm -f beta.plt
+# xmipp: imagic_alpha=alpha_t+90
 /home/platform/relion1.2/bin/relion_star_printtable $Xmd data_micrographPairs _micrograph _angleY2 _angleTilt | awk '{print $1,$2+90,$3}' > angles.plt
 cut -d" " -f1 angles.plt | sed 's/[^0-9]*//g;s/^0*//' > del.plt
 cut -d" " -f2,3 angles.plt > del2.plt
@@ -60,9 +51,6 @@ done
 cut -d" " -f2 del3.plt > alpha.plt
 cut -d" " -f3 del3.plt > beta.plt
 rm -f del3.plt mic_num.plt mic_num2.plt
-echo "! "
-echo "! IMAGIC program: headers ----------------------------------------------"
-echo "! "
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 INDEX
@@ -72,9 +60,6 @@ FILE
 alpha.plt
 $Tilt
 EOF
-echo "! "
-echo "! IMAGIC program: headers ----------------------------------------------"
-echo "! "
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 INDEX
@@ -84,9 +69,6 @@ FILE
 beta.plt
 $Tilt
 EOF
-echo "! "
-echo "! IMAGIC program: headers ----------------------------------------------"
-echo "! "
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 INDEX
@@ -96,9 +78,6 @@ FILE
 gamma.plt
 $Tilt
 EOF
-echo "! "
-echo "! IMAGIC program: headers ----------------------------------------------"
-echo "! "
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 TAKE_OVER
 AR_EULER_TO_PM_EULER
