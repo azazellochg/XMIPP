@@ -1,11 +1,13 @@
 #!/bin/bash
+###Imagic should be sourced as well! Otherwise you get segfault
+source /home9/sharov/soft/xmipp-3.1-src/.xmipp.bashrc
 echo "Script to convert Xmipp3 image files to imagic stack"
 echo "The particle files are usually in folder Images/Extracted/run_*/"
 echo ""
 echo -en "Hit enter to select the untilted xmd file"
 read Junk1
 UntSel=`zenity --file-selection --title="Untilted xmd file" --file-filter=*.xmd`
-~sharov/soft/xmipp-3.1-src/bin/xmipp_image_convert -i $UntSel --mode overwrite --label image -o untilt_stack.img --oext img --type auto --depth default
+xmipp_image_convert -i $UntSel --mode overwrite --label image -o untilt_stack.img --oext img --type auto --depth default
 /home/imagic/imagic_110308_64/stand/headers.e <<EOF >/dev/null
 WRITE
 2D_IMAGE
