@@ -2,7 +2,7 @@
 export IMAGIC_BATCH=1
 # Batch assumes that you used prep_conic3.b to prepare your files for Imagic alignment
 echo "Batch to convert Xmipp3 parameters to Imagic"
-echo "Last alined untilted imagic file: "
+echo "Last aligned untilted imagic file: "
 Ali=`zenity --file-selection --title="Last alined untilted imagic file" --file-filter=*.img`
 echo "Centered tilted imagic file: "
 Tilt=`zenity --file-selection --title="Centered tilted imagic file" --file-filter=*.img`
@@ -23,13 +23,13 @@ then :
 else
 echo "You didn't run Particle extraction!" && exit 1
 fi
-echo -en "Hit enter to select the micrographs.xmd file"
-read Junk1
+echo -en "Select the micrographs.xmd file: (usually in Images/Extracted/run_*/)"
 Xmd=`zenity --file-selection --title="micrographs.xmd file" --file-filter=*.xmd`
 [ -f alpha.plt ] && rm -f alpha.plt
 [ -f beta.plt ] && rm -f beta.plt
-# xmipp: imagic_alpha=alpha_t+90
-/home/platform/relion1.2/bin/relion_star_printtable $Xmd data_micrographPairs _micrograph _angleY2 _angleTilt | awk '{print $1,$2+90,$3}' > angles.plt
+# xmipp2: imagic_alpha=alpha_t+90
+# xmipp3: imagic_alpha=180-angleY2+90
+/home/platform/relion1.2/bin/relion_star_printtable $Xmd data_micrographPairs _micrograph _angleY2 _angleTilt | awk '{print $1,180-$2+90,$3}' > angles.plt
 cut -d" " -f1 angles.plt | sed 's/[^0-9]*//g;s/^0*//' > del.plt
 cut -d" " -f2,3 angles.plt > del2.plt
 paste -d ' ' del.plt del2.plt > angles.plt
