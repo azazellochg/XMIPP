@@ -1,4 +1,6 @@
 #!/bin/csh -f
+#http://xmipp.cnb.csic.es/twiki/bin/view/Xmipp/Ml_tomo (c)
+
 set doc=$1
 set oext=$2
 set tot=`wc -l $doc | awk  '{print $1}'`
